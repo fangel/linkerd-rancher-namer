@@ -4,6 +4,7 @@ admin:
 namers:
 - kind: io.l5d.rancher
   experimental: true
+  refreshIntervalSeconds: 15
 
 routers:
 - protocol: http
