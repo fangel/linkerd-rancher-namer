@@ -1,0 +1,25 @@
+version: "2"
+services:
+  linkerd:
+    build: .
+    ports:
+      - 9990:9990
+      - 4140:4140
+    volumes:
+      - ./linkerd.yml:/io/buoyant/linkerd/config.yml:ro
+    command:
+      - "/io/buoyant/linkerd/config.yml"
+      - "-log.level=DEBUG"
+    links:
+      - rancher-metadata:rancher-metadata
+
+  rancher-metadata:
+    image: nginx:alpine
+    volumes:
+      - ./mock-metadata-api:/usr/share/nginx/html
+
+  sample-service1:
+    image: scottsbaldwin/docker-hello-world
+
+  sample-service2:
+    image: scottsbaldwin/docker-hello-world

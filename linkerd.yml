@@ -1,0 +1,16 @@
+admin:
+  port: 9990
+
+namers:
+- kind: io.l5d.rancher
+  experimental: true
+
+routers:
+- protocol: http
+  dtab: |
+    /svc => /#/io.l5d.rancher/sample-stack;
+  httpAccessLog: logs/access.log
+  label: int
+  servers:
+  - port: 4140
+    ip: 0.0.0.0
