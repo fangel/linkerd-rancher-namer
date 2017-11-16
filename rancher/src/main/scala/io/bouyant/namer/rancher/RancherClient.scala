@@ -6,7 +6,7 @@ import com.fasterxml.jackson.module.scala.experimental.ScalaObjectMapper
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 
-import com.twitter.finagle.{Service, Http}
+import com.twitter.finagle.{Service, Http, Address}
 import com.twitter.finagle.http
 import com.twitter.finagle.service.Retries
 import com.twitter.finagle.tracing.NullTracer
@@ -47,7 +47,9 @@ case class RancherContainer(
   ports: List[PortMapping],
   serviceName: String,
   stackName: String
-)
+) {
+  def toAddr:Address = Address(primaryIp, ports(0).publicPort)
+}
 
 class RancherClient(
   refreshInterval: Duration,

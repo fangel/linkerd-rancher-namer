@@ -1,5 +1,6 @@
 package io.bouyant.namer.rancher
 
+import com.twitter.finagle.buoyant.ExistentialStability._
 import com.twitter.finagle._
 import com.twitter.logging.Logger
 import com.twitter.util.Activity.State
@@ -17,25 +18,25 @@ class RancherNamer(
     case phd@Path.Utf8(stack, service) =>
       log.debug("stack: %s, service: %s", stack, service)
 
-      client.activity.map(allContainers => {
-        val addresses = allContainers.filter(
+      val containers:Activity[Option[Set[RancherContainer]]] = client.activity.map { allContainers =>
+        val eligable:Set[RancherContainer] = allContainers.filter(
           (c:RancherContainer) => c.stackName == stack && c.serviceName == service
-        ).map(
-          (c:RancherContainer) => {
-            Address(c.primaryIp, c.ports(0).publicPort)
-          }
         ).toSet
 
-        log.debug("stack: %s, service: %s, result: %s", stack, service, addresses)
-
-        NameTree.Leaf(
-          Name.Bound(
-            Var.value(Addr.Bound(addresses)),
-            prefix ++ phd,
-            path.drop(2)
-          )
-        )
-      })
+        eligable.size match {
+          case 0 => None
+          case _ => Some(eligable)
+        }
+      }
+      val stabilized:Activity[Option[Var[Set[RancherContainer]]]] = containers.stabilizeExistence
+      val tree:Activity[NameTree[Name]] = stabilized.map {
+        case Some(eligable) =>
+          val addr:Var[Addr] = eligable.map(_.map(_.toAddr)).map(Addr.Bound(_))
+          NameTree.Leaf(Name.Bound(addr, prefix ++ phd, path.drop(2)))
+        case None =>
+          NameTree.Neg
+      }
+      tree
     case _ => Activity.value(NameTree.Neg)
   }
 }

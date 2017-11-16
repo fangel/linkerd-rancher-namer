@@ -1,6 +1,6 @@
 # Rancher Namer for Linkerd
 
-This is a **VERY EXPERIMENTAL** and currently **NOT FUNCTIONAL** namer for
+This is a **VERY EXPERIMENTAL** and currently **SEMI FUNCTIONAL** namer for
 [Linkerd](https://linkerd.io) for use with [Rancher](http://rancher.com).
 
 To run the experiment, first compile the .jar-file:

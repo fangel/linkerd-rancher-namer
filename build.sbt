@@ -6,7 +6,7 @@ def finagle(mod: String) =
   "com.twitter" %% s"finagle-$mod" % "6.45.0"
 
 def linkerd(mod: String) =
-  "io.buoyant" %% s"linkerd-$mod" % "1.2.0"
+  "io.buoyant" %% s"linkerd-$mod" % "1.3.1"
 
 val jacksonVersion = "2.8.4"
 
@@ -25,6 +25,7 @@ val rancher =
         twitterUtil("core") % "provided" ::
         linkerd("core") % "provided" ::
         linkerd("protocol-http") % "provided" ::
+        "io.buoyant" %% "finagle-buoyant" % "1.3.1" % "provided" ::
         "com.fasterxml.jackson.core" % "jackson-core" % jacksonVersion % "provided" ::
         "com.fasterxml.jackson.core" % "jackson-annotations" % jacksonVersion % "provided" ::
         "com.fasterxml.jackson.core" % "jackson-databind" % jacksonVersion % "provided" ::
