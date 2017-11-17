@@ -23,3 +23,6 @@ services:
 
   sample-service2:
     image: scottsbaldwin/docker-hello-world
+
+  sample-service3:
+    image: scottsbaldwin/docker-hello-world

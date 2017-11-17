@@ -48,7 +48,10 @@ case class RancherContainer(
   serviceName: String,
   stackName: String
 ) {
-  def toAddr:Address = Address(primaryIp, ports(0).publicPort)
+  def toAddr(privatePort: Int):Option[Address] = ports.find(_.privatePort == privatePort) match {
+    case Some(port) => Some(Address(primaryIp, port.publicPort))
+    case None => None
+  }
 }
 
 class RancherClient(
