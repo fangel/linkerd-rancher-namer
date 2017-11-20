@@ -46,11 +46,12 @@ case class RancherContainer(
   name: String,
   ports: List[PortMapping],
   serviceName: String,
-  stackName: String
+  stackName: String,
+  state: String
 ) {
-  def toAddr(privatePort: Int):Option[Address] = ports.find(_.privatePort == privatePort) match {
-    case Some(port) => Some(Address(primaryIp, port.publicPort))
-    case None => None
+  def toAddr(port: Int):Option[Address] = state match {
+    case "running" => Some(Address(primaryIp, port))
+    case _ => None
   }
 }
 
@@ -65,27 +66,36 @@ class RancherClient(
   private[this] val service = Http.client
       .withStack(Http.client.stack.remove(Retries.Role))
       .withParams(Http.client.params) // ++ params
-      .withLabel("client")
+      .withLabel("io.buyant.namer.rancher.client")
       .withTracer(NullTracer)
       .newService(s"/$$/inet/rancher-metadata/80")
 
   private[this] val containers =
     Activity(Var.async[State[List[RancherContainer]]](Activity.Pending) { state =>
       val done = new AtomicBoolean(false)
+      val initialized = new AtomicBoolean(false)
 
       Future.whileDo(!done.get) {
-        val request = http.Request(http.Method.Get, "/containers")
+        val request = http.Request(http.Method.Get, "/2015-12-19/containers")
         request.host = "rancher-metadata"
-        request.contentType = "application/json"
+        request.accept = "application/json"
         val response = service(request)
         response
           .map { _.getContentString() }
           .map { objectMapper.readValue[List[RancherContainer]] }
           .onSuccess {(resp:List[RancherContainer]) =>
+            initialized.set(true)
             log.debug("fetched info about %s containers from Rancher", resp.length)
             state.update(Activity.Ok(resp))
           }
+          .onFailure { e =>
+            log.error("failed to fetch metadata. %s", e)
+            if (!initialized.get) {
+              state.update(Activity.Failed(e))
+            }
+          }
 
+        // http://rancher-metadata/2015-12-19/version?wait=true&value=1294311-4f3c5c96fb170da7fa8781d4ac55192c&maxWait=10
         Future.sleep(refreshInterval)
       }
 

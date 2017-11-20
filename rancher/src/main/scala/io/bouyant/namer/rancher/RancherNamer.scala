@@ -11,7 +11,7 @@ class RancherNamer(
   refreshInterval: Duration,
   portMappings: Option[Map[String, Int]]
 ) (implicit val timer: Timer) extends Namer {
-  private[this] val log = Logger.get("rancher")
+  private[this] val log = Logger.get("io.bouyant.namer.rancher")
 
   private[this] val ports = Map(
     "http" -> 80,
@@ -37,7 +37,7 @@ class RancherNamer(
 
         val containers:Activity[Option[Addr]] = client.activity.map { allContainers =>
           val eligable:Set[Address] = allContainers
-            .filter(c => c.stackName == stack && c.serviceName == service)
+            .filter(c => stack.equalsIgnoreCase(c.stackName) && service.equalsIgnoreCase(c.serviceName))
             .collect(scala.Function.unlift(_.toAddr(portNum)))
             .toSet
 
