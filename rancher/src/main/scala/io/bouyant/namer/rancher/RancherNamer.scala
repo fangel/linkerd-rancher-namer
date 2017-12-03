@@ -2,6 +2,7 @@ package io.bouyant.namer.rancher
 
 import com.twitter.finagle.buoyant.ExistentialStability._
 import com.twitter.finagle._
+import com.twitter.finagle.stats.StatsReceiver
 import com.twitter.logging.Logger
 import com.twitter.util.Activity.State
 import com.twitter.util._
@@ -9,19 +10,18 @@ import com.twitter.util._
 class RancherNamer(
   prefix: Path,
   refreshInterval: Duration,
-  portMappings: Option[Map[String, Int]]
+  portMappings: Option[Map[String, Int]],
+  params: Stack.Params,
+  stats: StatsReceiver
 ) (implicit val timer: Timer) extends Namer {
   private[this] val log = Logger.get("io.bouyant.namer.rancher")
 
   private[this] val ports = Map(
     "http" -> 80,
     "https" -> 443
-  ) ++ (portMappings match  {
-    case Some(additionalPorts) => additionalPorts
-    case None => Map()
-  })
+  ) ++ portMappings.getOrElse(Map())
 
-  private[this] val client = new RancherClient(refreshInterval, log)
+  private[this] val client = new RancherClient(refreshInterval, log, params, stats)
 
   private[this] def lookupPort(port:String):Option[Int] =
     (Try(port.toInt).toOption, ports.get(port)) match {

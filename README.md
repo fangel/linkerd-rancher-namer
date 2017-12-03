@@ -54,7 +54,11 @@ accordingly (with a 15 second delay).
 ---
 
 Alternatively, you can also use a static mock version of the Rancher Metadata
-API which allows you to run the experiments using Docker Compose. Simply do a:
+API which allows you to run the experiments using Docker Compose.
+Since the mock metadata-server doesn't support a long-polling functionality, you
+probably want to modify `RancherClient.scala` to include a wait after each
+request (there is a commented out line that does this). After doing this change
+rebuild the plugin, and then start the images using
 
 ```bash
 docker-compose up --build

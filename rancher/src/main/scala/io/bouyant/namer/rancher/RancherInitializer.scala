@@ -29,6 +29,7 @@ case class RancherConfig(
   @JsonIgnore
   override def newNamer(params: Stack.Params):RancherNamer = {
     val timer:Timer = params[param.Timer].timer
-    new RancherNamer(prefix, refreshIntervalSeconds.getOrElse(30).seconds, portMappings)(timer)
+    val stats = params[param.Stats].statsReceiver.scope(prefix.show.stripPrefix("/"))
+    new RancherNamer(prefix, refreshIntervalSeconds.getOrElse(30).seconds, portMappings, params, stats)(timer)
   }
 }

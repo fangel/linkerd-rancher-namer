@@ -9,6 +9,11 @@ namers:
   portMappings:
     http-proxy: 8080
 
+telemetry:
+- kind: io.l5d.prometheus
+  path: /admin/metrics/prometheus
+  prefix: linkerd_
+
 routers:
 - protocol: http
   dtab: |
